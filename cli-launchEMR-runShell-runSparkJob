@@ -1,0 +1,103 @@
+{
+  "objects": [
+    {
+      "name": "DefaultProperty1",
+      "id": "PropertyId_RSu0g",
+      "type": "Property",
+      "value": "org.apache.hadoop.yarn.util.resource.DominantResourceCalculator",
+      "key": "yarn.scheduler.capacity.resource-calculator"
+    },
+    {
+      "role": "DataPipelineDefaultRole",
+      "subject": "Data pipeline Job failure",
+      "name": "spark job failure action",
+      "id": "ActionId_PmCXb",
+      "type": "SnsAlarm",
+      "message": "Pipeline Id = @pipelineId\nError = @error\n",
+      "topicArn": "arn:aws:sns:ap-southeast-1:833347033499:AWSdatapipeline"
+    },
+    {
+      "failureAndRerunMode": "CASCADE",
+      "schedule": {
+        "ref": "DefaultSchedule"
+      },
+      "resourceRole": "DataPipelineDefaultResourceRole",
+      "role": "DataPipelineDefaultRole",
+      "pipelineLogUri": "s3://modharleen/AWSLogs/",
+      "scheduleType": "cron",
+      "name": "Default",
+      "id": "Default"
+    },
+    {
+      "name": "DefaultEmrConfiguration1",
+      "property": {
+        "ref": "PropertyId_RSu0g"
+      },
+      "id": "EmrConfigurationId_vX9S2",
+      "classification": "capacity-scheduler",
+      "type": "EmrConfiguration"
+    },
+    {
+      "schedule": {
+        "ref": "DefaultSchedule"
+      },
+      "onFail": {
+        "ref": "ActionId_PmCXb"
+      },
+      "dependsOn": {
+        "ref": "HadoopActivityId_T8MAP"
+      },
+      "maximumRetries": "1",
+      "name": "DefaultEmrActivity1",
+      "step": "s3://ap-southeast-1.elasticmapreduce/libs/script-runner/script-runner.jar,s3://modharleen/directToDashboard/run.sh",
+      "runsOn": {
+        "ref": "EmrClusterId_GstVS"
+      },
+      "id": "EmrActivityId_IftCX",
+      "type": "EmrActivity"
+    },
+    {
+      "period": "24 Hours",
+      "name": "Every x hours",
+      "id": "DefaultSchedule",
+      "type": "Schedule",
+      "startAt": "FIRST_ACTIVATION_DATE_TIME"
+    },
+    {
+      "subnetId": "subnet-8718fae0",
+      "additionalMasterSecurityGroupIds": "sg-8fbe44f6",
+      "additionalSlaveSecurityGroupIds": "sg-8fbe44f6",
+      "configuration": {
+        "ref": "EmrConfigurationId_vX9S2"
+      },
+      "maximumRetries": "1",
+      "coreInstanceCount": "2",
+      "masterInstanceType": "m4.4xlarge",
+      "releaseLabel": "emr-5.11.0",
+      "type": "EmrCluster",
+      "hadoopSchedulerType": "PARALLEL_CAPACITY_SCHEDULING",
+      "schedule": {
+        "ref": "DefaultSchedule"
+      },
+      "name": "EmrCluster1",
+      "keyPair": "EC2-bigtapp-key",
+      "coreInstanceType": "m4.2xlarge",
+      "id": "EmrClusterId_GstVS",
+      "region": "ap-southeast-1",
+      "applications": "spark"
+    },
+    {
+      "schedule": {
+        "ref": "DefaultSchedule"
+      },
+      "name": "hdfs delete",
+      "runsOn": {
+        "ref": "EmrClusterId_GstVS"
+      },
+      "id": "HadoopActivityId_T8MAP",
+      "type": "ShellCommandActivity",
+      "command": "hdfs dfs -rm -f -R /home"
+    }
+  ],
+  "parameters": []
+}
